@@ -5,7 +5,6 @@ export class Steps extends Component {
 
     constructor(props) {
         super(props);
-        this.buttonClick = this.buttonClick.bind(this);
         this.authToSpotify = this.authToSpotify.bind(this);
         this.state = { step: 0 }
     }
@@ -18,29 +17,42 @@ export class Steps extends Component {
 
             if (result.state === 'spotify') {
                 this.setState({ step: 1 });
-                this.getSpotifyTracks(result.access_token).then((res) => {
-                    this.setState({ tracks: res });
+                this.getSpotifyTracks(result.access_token).then((tracks) => {
+                    this.setState({tracks: tracks, step: 1});
+
+                    const promises = tracks.items.map(item => {
+                        return this.getYoutubeBestResult(item.track.name + ' ' + item.track.artists[0].name)
+                    });
+                     Promise.all(promises).then(
+                        (res) => {
+                            this.setState({
+                                videos: res ,
+                                step: 2
+                            })
+                        }
+                    );
                 })
             }
         }
     }
 
-    getSpotifyTracks(token) {
-        return fetch('https://api.spotify.com/v1/me/tracks', {
-            headers: {
-                'Authorization': token
-            }
+    getYoutubeBestResult(query) {
+        return fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q='+query+'&key=AIzaSyCZ_jZnidYQ4rXC35YGp5baencNZ3i0F9c').then((res) => {
+            return res.json()
         });
     }
 
-
-    buttonClick() {
-        this.setState({ step: 1 });
-        console.log('state: ', this.state);
+    getSpotifyTracks(token) {
+        return fetch('https://api.spotify.com/v1/me/tracks', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        }).then((res) => {
+            return res.json();
+        });
     }
 
     authToSpotify() {
-        console.log('redirect: ', 1);
         const url = `https://accounts.spotify.com/authorize?client_id=3b4af6bbede345b49ed61dada982a3d6&redirect_uri=${encodeURI(window.location.href)}&scope=user-library-read&response_type=token&state=spotify`;
         window.location.replace(url);
     }
@@ -56,8 +68,10 @@ export class Steps extends Component {
         return result;
     }
 
+
+
     render() {
-        const tracks = JSON.stringify(this.state.tracks);
+        const tracks = this.state.tracks;
         switch (this.state.step) {
             case 0: {
                 return (
@@ -72,10 +86,7 @@ export class Steps extends Component {
                 return (
                     <Fragment>
                         <h2>Step 2</h2>
-                        <p>Show List of Songs</p>
-                        <pre>
-                            {tracks}
-                        </pre>
+                        <pre>{JSON.stringify(tracks)}</pre>
                     </Fragment>
                 )
             }
@@ -84,7 +95,11 @@ export class Steps extends Component {
                     <Fragment>
                         <h2>Step 2</h2>
                         <p>Allow Access to your Youtube Account</p>
-                        <Button onClick={this.buttonClick} variant="contained" color="primary">Connect to Youtube</Button>
+                        <ul>
+                            {this.state.videos.map(video => {
+                                return (<li><a target={'_blank'} href={'https://www.youtube.com/watch?v=' + video.items[0].id.videoId}>{video.items[0].snippet.title}</a></li>)
+                            })}
+                        </ul>
                     </Fragment>
                 )
         }
