@@ -6,12 +6,10 @@
     "node": "10.13"
   },
   "dependencies": {
-    "grommet": "^2.0.0-rc",
-    "grommet-icons": "^3.1.0",
+    "@material-ui/core": "^3.5.1",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
-    "react-scripts": "2.1.0",
-    "styled-components": "^4.0.3"
+    "react-scripts": "2.1.0"
   },
   "scripts": {
     "start": "react-scripts start",

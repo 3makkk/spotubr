@@ -1,5 +1,5 @@
-import React, {Component, Fragment} from 'react';
-import {Button, Heading} from "grommet/es6";
+import React, { Component, Fragment } from 'react';
+import { Button } from '@material-ui/core';
 
 export class Steps extends Component {
 
@@ -7,19 +7,19 @@ export class Steps extends Component {
         super(props);
         this.buttonClick = this.buttonClick.bind(this);
         this.authToSpotify = this.authToSpotify.bind(this);
-        this.state = {step: 0}
+        this.state = { step: 0 }
     }
 
     componentDidMount() {
         const hash = window.location.hash.substr(1);
 
-        if(hash) {
+        if (hash) {
             const result = this.decodeQueryString(hash);
 
-            if(result.state === 'spotify') {
-                this.setState({step: 1});
+            if (result.state === 'spotify') {
+                this.setState({ step: 1 });
                 this.getSpotifyTracks(result.access_token).then((res) => {
-                    this.setState({tracks: res});
+                    this.setState({ tracks: res });
                 })
             }
         }
@@ -33,9 +33,9 @@ export class Steps extends Component {
         });
     }
 
-    
+
     buttonClick() {
-        this.setState({step: 1});
+        this.setState({ step: 1 });
         console.log('state: ', this.state);
     }
 
@@ -48,7 +48,7 @@ export class Steps extends Component {
     decodeQueryString(queryString) {
         var pairs = queryString.split('&');
         var result = {};
-        pairs.forEach(function(pair) {
+        pairs.forEach(function (pair) {
             pair = pair.split('=');
             result[pair[0]] = decodeURIComponent(pair[1] || '');
         });
@@ -62,16 +62,16 @@ export class Steps extends Component {
             case 0: {
                 return (
                     <Fragment>
-                        <Heading level={4}>Step 1</Heading>
+                        <h2>Step 1</h2>
                         <p>Allow Access to your Spotify Account</p>
-                        <Button  onClick={this.authToSpotify} primary={true} plain={false} fill={false}>Connect to Spotify</Button>
+                        <Button onClick={this.authToSpotify}variant="contained" color="primary">Connect to Spotify</Button>
                     </Fragment>
                 )
             }
             case 1: {
                 return (
                     <Fragment>
-                        <Heading level={4}>Step 2</Heading>
+                        <h2>Step 2</h2>
                         <p>Show List of Songs</p>
                         <pre>
                             {tracks}
@@ -82,9 +82,9 @@ export class Steps extends Component {
             case 2:
                 return (
                     <Fragment>
-                        <Heading level={4}>Step 2</Heading>
+                        <h2>Step 2</h2>
                         <p>Allow Access to your Youtube Account</p>
-                        <Button onClick={this.buttonClick} primary={true} plain={false} fill={false}>Connect to Youtube</Button>
+                        <Button onClick={this.buttonClick} variant="contained" color="primary">Connect to Youtube</Button>
                     </Fragment>
                 )
         }
