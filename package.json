@@ -2,6 +2,9 @@
   "name": "spotify-youtube",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=10.13"
+  },
   "dependencies": {
     "grommet": "^2.0.0-rc",
     "grommet-icons": "^3.1.0",
