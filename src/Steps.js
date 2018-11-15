@@ -53,7 +53,7 @@ export class Steps extends Component {
     }
 
     authToSpotify() {
-        const url = `https://accounts.spotify.com/authorize?client_id=3b4af6bbede345b49ed61dada982a3d6&redirect_uri=${encodeURI(window.location.href)}&scope=user-library-read&response_type=token&state=spotify`;
+        const url = `https://accounts.spotify.com/authorize?client_id=3b4af6bbede345b49ed61dada982a3d6&redirect_uri=${encodeURIComponent(window.location.href)}&scope=user-library-read&response_type=token&state=spotify`;
         window.location.replace(url);
     }
 
