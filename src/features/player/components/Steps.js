@@ -52,19 +52,10 @@ export class Steps extends Component {
 
     authToSpotify() {
         const url = `https://accounts.spotify.com/authorize?client_id=${process.env.REACT_APP_SPOTIFY_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.href)}&scope=user-library-read&response_type=token&state=spotify`;
-        window.location.replace(url);
+        window.open(url, 'spotify-login', 'width=500,height=700,resizable=1');
     }
 
-    decodeQueryString(queryString) {
-        var pairs = queryString.split('&');
-        var result = {};
-        pairs.forEach(function (pair) {
-            pair = pair.split('=');
-            result[pair[0]] = decodeURIComponent(pair[1] || '');
-        });
 
-        return result;
-    }
 
 
     loginToSpotify() {
