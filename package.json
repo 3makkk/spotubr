@@ -9,8 +9,10 @@
     "@material-ui/core": "^3.5.1",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
+    "react-lazy-youtube": "^1.0.1",
     "react-scripts": "2.1.0",
-    "spotify-web-api-js": "^1.1.1"
+    "spotify-web-api-js": "^1.1.1",
+    "styled-components": "^4.1.1"
   },
   "scripts": {
     "start": "react-scripts start",

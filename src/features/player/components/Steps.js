@@ -34,11 +34,7 @@ export class Steps extends Component {
         }
     }
 
-    getYoutubeBestResult(query) {
-        return fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${query}&key=${process.env.REACT_APP_GOOGLE_KEY}`).then((res) => {
-            return res.json()
-        });
-    }
+
 
     getSpotifyTracks(token) {
         return fetch('https://api.spotify.com/v1/me/tracks', {

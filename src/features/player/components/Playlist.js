@@ -13,12 +13,14 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import SpotifyWebApi from 'spotify-web-api-js'
-import Table from "@material-ui/core/Table/Table";
-import TableHead from "@material-ui/core/TableHead/TableHead";
-import TableRow from "@material-ui/core/TableRow/TableRow";
-import TableCell from "@material-ui/core/TableCell/TableCell";
-import TableBody from "@material-ui/core/TableBody/TableBody";
-import Paper from "@material-ui/core/Paper/Paper";
+import ExpansionPanel from "@material-ui/core/ExpansionPanel/ExpansionPanel";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails/ExpansionPanelDetails";
+import Grid from "@material-ui/core/Grid/Grid";
+import Card from "@material-ui/core/Card/Card";
+import CardContent from "@material-ui/core/CardContent/CardContent";
+import Player from 'react-lazy-youtube'
+import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 
 const drawerWidth = 240;
 
@@ -76,7 +78,7 @@ const styles = theme => ({
             duration: theme.transitions.duration.enteringScreen,
         }),
         marginLeft: 0,
-    },
+    }
 });
 
 class Playlist extends React.Component {
@@ -84,19 +86,44 @@ class Playlist extends React.Component {
         open: true,
         playlists: [],
         songs: [],
+        videos: {}
     };
+
 
     constructor(props) {
         super(props);
-        const spotify = new SpotifyWebApi();
-        spotify.setAccessToken(props.authData.access_token);
+        this.spotify = new SpotifyWebApi();
+        this.spotify.setAccessToken(props.authData.access_token);
 
-        spotify.getUserPlaylists().then(data => {
+        this.spotify.getUserPlaylists().then(data => {
             this.setState({playlists: data.items})
         });
 
-        spotify.getMySavedTracks().then(data => {
-            this.setState({songs: data.items})
+        this.spotify.getMySavedTracks().then(data => {
+            this.getYoutubeVideos(data);
+        });
+    }
+
+    getYoutubeVideos(data) {
+        data.items.forEach(item => {
+            this.getYoutubeBestResult(item.track.name + ' ' + item.track.artists[0].name).then(video => {
+                this.setState(prevState => ({
+                    songs: [...prevState.songs, {spotify: item, youtube: video.items[0]}]
+                }));
+            });
+        });
+    }
+
+    getYoutubeBestResult(query) {
+        return fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&fields=items(id)&maxResults=1&q=${query}&key=${process.env.REACT_APP_GOOGLE_KEY}`).then((res) => {
+            return res.json()
+        });
+    }
+
+    loadPlaylist(playlist) {
+        this.setState({songs: []});
+        this.spotify.getPlaylistTracks(playlist).then(data => {
+            this.getYoutubeVideos(data);
         });
     }
 
@@ -105,7 +132,7 @@ class Playlist extends React.Component {
         return (<List>
             <ListSubheader>Bibliothek</ListSubheader>
             {playlists.map((playlist) => (
-                <ListItem button key={playlist.name}>
+                <ListItem button key={playlist.id} onClick={this.loadPlaylist.bind(this, playlist.id)}>
                     <ListItemText primary={playlist.name}/>
                 </ListItem>
             ))}
@@ -114,12 +141,24 @@ class Playlist extends React.Component {
 
     TrackRow(item) {
         return (
-            <TableRow>
-                <TableCell>{item.track.name}</TableCell>
-                <TableCell>{item.track.artists.map(artist => (artist.name)).join(', ')}</TableCell>
-                <TableCell>{item.track.album.name}</TableCell>
-                <TableCell> {(new Date(item.added_at)).toLocaleDateString()}</TableCell>
-            </TableRow>
+            <ExpansionPanel>
+                <ExpansionPanelSummary>
+                    <Grid
+                        container
+                        direction="row"
+                        justify="center"
+                        alignItems="center"
+                    >
+                        <Grid item xs={5}>{item.spotify.track.name}</Grid>
+                        <Grid item xs>{item.spotify.track.artists.map(artist => (artist.name)).join(', ')}</Grid>
+                        <Grid item xs>{item.spotify.track.album.name}</Grid>
+                        <Grid item xs={1}> {(new Date(item.spotify.added_at)).toLocaleDateString()}</Grid>
+                    </Grid>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <Player id={item.youtube.id.videoId}/>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
         )
     }
 
@@ -169,21 +208,35 @@ class Playlist extends React.Component {
                     })}
                 >
                     <div className={classes.drawerHeader}/>
-                    <Paper>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Title</TableCell>
-                                    <TableCell>Artist</TableCell>
-                                    <TableCell>Album</TableCell>
-                                    <TableCell>Added</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {songs.map(item => this.TrackRow(item))}
-                            </TableBody>
-                        </Table>
-                    </Paper>
+                    <Card>
+                        <CardContent>
+                            <Grid
+                                container
+                                direction="row"
+                                justify="center"
+                                alignItems="center"
+                            >
+                                <Grid item xs={5}>Name</Grid>
+                                <Grid item xs>Artist</Grid>
+                                <Grid item xs>Album</Grid>
+                                <Grid item xs={1}>Added</Grid>
+                            </Grid>
+                        </CardContent>
+                        {songs.length === 0 &&
+                        <CardContent>
+                            <Grid
+                                container
+                                direction="row"
+                                justify="center"
+                                alignItems="center"
+                            >
+                                <CircularProgress/>
+                            </Grid>
+                        </CardContent>
+                        }
+                    </Card>
+                    {songs.map(item => this.TrackRow(item))}
+                    {/*</ExpansionPanel>*/}
                 </main>
             </div>
         );
